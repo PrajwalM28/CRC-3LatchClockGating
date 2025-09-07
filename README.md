@@ -99,7 +99,8 @@ Expected CRC output = 101
 
 Sample Simulation Waveform
 
-(Insert waveform image here – e.g. docs/waveform.png)
+<img width="1814" height="425" alt="17572599598632259848741214954965" src="https://github.com/user-attachments/assets/a5511f60-9539-49d0-b847-ce9dfe3c1bd8" />
+
 
 The waveform shows:
 
