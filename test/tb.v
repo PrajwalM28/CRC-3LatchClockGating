@@ -20,7 +20,7 @@ module tb_crc3;
     );
 
     // 100 MHz
-    initial clk = 0;
+    initial clk = 1'b0;
     always #5 clk = ~clk;
 
     initial begin
@@ -29,30 +29,32 @@ module tb_crc3;
 
         // Reset
         rst_n = 0; ui_in = 8'b0;
-        #20 rst_n = 1;
+        repeat (5) @(posedge clk);
+        rst_n = 1;
 
         // Enable shifting
         ui_in[0] = 1'b1;
 
         // Send message 10101 (MSB-first) then 3 padding zeros
-        // bit times aligned to clock edges (matching gated_clk behavior)
-        ui_in[1] = 1; #10;  // 1
-        ui_in[1] = 0; #10;  // 0
-        ui_in[1] = 1; #10;  // 1
-        ui_in[1] = 0; #10;  // 0
-        ui_in[1] = 1; #10;  // 1
-        ui_in[1] = 0; #10;  // padding
-        ui_in[1] = 0; #10;  // padding
-        ui_in[1] = 0; #10;  // padding
+        // Drive ui_in[1] just before posedge so DUT samples at posedge
+        ui_in[1] = 1; @(posedge clk);
+        ui_in[1] = 0; @(posedge clk);
+        ui_in[1] = 1; @(posedge clk);
+        ui_in[1] = 0; @(posedge clk);
+        ui_in[1] = 1; @(posedge clk);
+        ui_in[1] = 0; @(posedge clk); // padding
+        ui_in[1] = 0; @(posedge clk); // padding
+        ui_in[1] = 0; @(posedge clk); // padding
 
-        // Keep enable high for one extra cycle (optional, safe)
-        #10;
+        // One more cycle to see the registered output
+        @(posedge clk);
 
         // Disable
-        ui_in[0] = 1'b0; #20;
+        ui_in[0] = 1'b0; @(posedge clk);
 
-        // At this point uo_out should be 8'hAD
-        $display("uo_out = %02h (expected AD)", uo_out);
+        $display("uo_out = 0x%02h (expected 0xAD)", uo_out);
         $finish;
     end
 endmodule
+
+`default_nettype wire
