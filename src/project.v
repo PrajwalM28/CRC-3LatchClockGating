@@ -1,3 +1,9 @@
+/* 
+ * Copyright (c) 2024 BMSCE04
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+
 /*
  * CRC-3 with latch-based clock gating (fixed & synthesizable)
  * Polynomial: x^3 + x + 1 (binary 1011)
