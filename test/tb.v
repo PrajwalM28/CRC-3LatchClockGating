@@ -1,38 +1,59 @@
+`timescale 1ns/1ps
 `default_nettype none
-`timescale 1ns / 1ps
 
-/* This testbench just instantiates the module and makes some convenient wires
-   that can be driven / tested by the cocotb test.py.
-*/
-module tb ();
+module tb_crc3;
+    reg clk;
+    reg rst_n;
+    reg [7:0] ui_in;
+    wire [7:0] uo_out;
 
-  // Dump the signals to a VCD file. You can view it with gtkwave or surfer.
-  initial begin
-    $dumpfile("tb.vcd");
-    $dumpvars(0, tb);
-    #1;
-  end
+    // DUT
+    tt_um_crc3 dut (
+        .ui_in(ui_in),
+        .uo_out(uo_out),
+        .uio_in(8'b0),
+        .uio_out(),
+        .uio_oe(),
+        .ena(1'b1),
+        .clk(clk),
+        .rst_n(rst_n)
+    );
 
-  // Wire up the inputs and outputs:
-  reg clk;
-  reg rst_n;
-  reg ena;
-  reg [7:0] ui_in;
-  reg [7:0] uio_in;
-  wire [7:0] uo_out;
-  wire [7:0] uio_out;
-  wire [7:0] uio_oe;
+    // 100 MHz
+    initial clk = 0;
+    always #5 clk = ~clk;
 
-  // Replace tt_um_example with your module name:
-  tt_um_example user_project (
-      .ui_in  (ui_in),    // Dedicated inputs
-      .uo_out (uo_out),   // Dedicated outputs
-      .uio_in (uio_in),   // IOs: Input path
-      .uio_out(uio_out),  // IOs: Output path
-      .uio_oe (uio_oe),   // IOs: Enable path (active high: 0=input, 1=output)
-      .ena    (ena),      // enable - goes high when design is selected
-      .clk    (clk),      // clock
-      .rst_n  (rst_n)     // not reset
-  );
+    initial begin
+        $dumpfile("crc3_codeword.vcd");
+        $dumpvars(0, tb_crc3);
 
+        // Reset
+        rst_n = 0; ui_in = 8'b0;
+        #20 rst_n = 1;
+
+        // Enable shifting
+        ui_in[0] = 1'b1;
+
+        // Send message 10101 (MSB-first) then 3 padding zeros
+        // bit times aligned to clock edges (matching gated_clk behavior)
+        ui_in[1] = 1; #10;  // 1
+        ui_in[1] = 0; #10;  // 0
+        ui_in[1] = 1; #10;  // 1
+        ui_in[1] = 0; #10;  // 0
+        ui_in[1] = 1; #10;  // 1
+        ui_in[1] = 0; #10;  // padding
+        ui_in[1] = 0; #10;  // padding
+        ui_in[1] = 0; #10;  // padding
+
+        // Keep enable high for one extra cycle (optional, safe)
+        #10;
+
+        // Disable
+        ui_in[0] = 1'b0; #20;
+
+        // At this point uo_out should be 8'hAD
+        $display("uo_out = %02h (expected AD)", uo_out);
+
+        $finish;
+    end
 endmodule
