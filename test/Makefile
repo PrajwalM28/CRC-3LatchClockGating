@@ -31,9 +31,11 @@ endif
 # Allow sharing configuration between design and testbench via `include`:
 COMPILE_ARGS 		+= -I$(SRC_DIR)
 
+
 # Include the testbench sources:
-VERILOG_SOURCES += $(PWD)/tb.v
-TOPLEVEL = tb
+VERILOG_SOURCES += $(PWD)/tb_crc3.v
+TOPLEVEL = tb_crc3
+
 
 # MODULE is the basename of the Python test file
 MODULE = test
