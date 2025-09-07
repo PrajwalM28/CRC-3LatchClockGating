@@ -24,7 +24,7 @@ module tb_crc3;
     always #5 clk = ~clk;
 
     initial begin
-        $dumpfile("crc3_codeword.vcd");
+        $dumpfile("tb.vcd");
         $dumpvars(0, tb_crc3);
 
         // Reset
