@@ -54,6 +54,5 @@ module tb_crc3;
         // At this point uo_out should be 8'hAD
         $display("uo_out = %02h (expected AD)", uo_out);
 
-        $finish;
     end
 endmodule
