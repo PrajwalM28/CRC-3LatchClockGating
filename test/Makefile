@@ -33,7 +33,7 @@ COMPILE_ARGS 		+= -I$(SRC_DIR)
 
 
 # Include the testbench sources:
-VERILOG_SOURCES += $(PWD)/tb_crc3.v
+VERILOG_SOURCES += $(PWD)/tb.v
 TOPLEVEL = tb_crc3
 
 
