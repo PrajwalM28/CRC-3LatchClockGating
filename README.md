@@ -132,3 +132,17 @@ Digital Design and LFSR theory for CRC computation
 
 
 ---
+
+Credits & Acknowledgments
+
+Prof. Dr. JayaGowri – Guidance and Mentorship
+
+BMS College of Engineering – Institutional support
+
+IEEE EDS – Knowledge sharing and community support
+
+Tiny Tapeout Team – Providing the platform for open-source chip design
+
+
+
+---
