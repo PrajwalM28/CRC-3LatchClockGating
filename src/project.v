@@ -3,16 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
-/*
- * CRC-3 with latch-based clock gating (fixed & synthesizable)
- * Polynomial: x^3 + x + 1 (binary 1011)
- * Message: 5 bits serial (MSB-first), then 3 padding zeros
- * Final output = codeword {message[4:0], crc[2:0]} when bit_count == 8
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
 `default_nettype none
 
 module tt_um_crc3 (
@@ -32,7 +22,7 @@ module tt_um_crc3 (
     wire data_in = ui_in[1];
 
     // Internal state
-    reg  [4:0] msg_reg;    // Holds 5-bit message (MSB-first, left shift)
+    reg  [4:0] msg_reg;    // holds 5-bit message as it's shifted in (MSB first)
     reg  [2:0] crc_reg;    // 3-bit CRC LFSR
     reg  [3:0] bit_count;  // 0..8
 
@@ -40,10 +30,11 @@ module tt_um_crc3 (
     assign uio_out = 8'b0;
     assign uio_oe  = 8'b0;
 
-    // Output: present when all 8 bits processed
+    // Output: only present when all 8 bits processed
+    // (wire, combinational - will reflect updated regs after the rising edge)
     assign uo_out = (bit_count == 4'd8) ? {msg_reg, crc_reg} : 8'b0;
 
-    // Latch-based clock gating (latched on negedge for glitch safety)
+    // Latch-based clock gating (latched on negedge for better glitch safety)
     reg latched_enable;
     always @(negedge clk or posedge reset) begin
         if (reset)
@@ -57,22 +48,21 @@ module tt_um_crc3 (
     wire next_bit = (bit_count < 4'd5) ? data_in : 1'b0;
 
     // CRC update on gated clock edges
-    // Polynomial: x^3 + x + 1 (1011), MSB-first division
+    // Polynomial: x^3 + x + 1  => taps: bit2 and bit0 (binary 1011)
     always @(posedge gated_clk or posedge reset) begin
         if (reset) begin
             msg_reg   <= 5'b0;
-            crc_reg   <= 3'b0;  // Initial state 0
+            crc_reg   <= 3'b0;
             bit_count <= 4'd0;
         end else if (enable) begin
-            // Shift message register left for first 5 bits (MSB-first)
+            // shift message register only during first 5 serial bits (MSB-first)
             if (bit_count < 4'd5)
                 msg_reg <= {msg_reg[3:0], data_in};
 
-            // Perform CRC shift/division for up to 8 cycles
+            // perform CRC shift/division for up to 8 cycles (5 data + 3 zeros)
             if (bit_count < 4'd8) begin
+                crc_reg   <= { next_bit ^ crc_reg[2] ^ crc_reg[0], crc_reg[2:1] };
                 bit_count <= bit_count + 1'b1;
-                // LFSR: new bit = data_in ^ crc[0] ^ crc[2], shift right
-                crc_reg <= {crc_reg[1:0], next_bit ^ crc_reg[0] ^ crc_reg[2]};
             end
         end
     end
