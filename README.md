@@ -34,6 +34,7 @@ Compact implementation for Tiny Tapeout tile constraints
 Block Diagram
 
 
+![17572599072393043403612168572490](https://github.com/user-attachments/assets/5d237886-0e05-495c-8e1a-3583079dd057)
 
 
 ---
